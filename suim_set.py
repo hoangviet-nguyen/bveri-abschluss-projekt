@@ -27,7 +27,7 @@ def download(download_dir: Path):
         extract_path=download_dir.joinpath("TEST/"),
     )
 
-class SuimSet(Dataset):
+class SuimDataSet(Dataset):
     def __init__(
     self,
     root_path: Path,
@@ -47,17 +47,6 @@ class SuimSet(Dataset):
         self.transform_images = transform_images
         self.transform_labels = transform_labels
         self.image_paths = list((root_path / "images").glob("*.jpg"))
-        
-        self.classes = {
-            0: "Background waterbody",
-            1: "Human divers",
-            2: "Plants/sea-grass",
-            3: "Wrecks/ruins",
-            4: "Robots/instruments",
-            5: "Reefs and invertebrates",
-            6: "Fish and vertebrates",
-            7: "Sand/sea-floor (& rocks)"
-        }
 
         self.rgb_to_class = {
             (0, 0, 0):          0,  # Black - Background waterbody
@@ -95,17 +84,14 @@ class SuimSet(Dataset):
         image = Image.open(image_path)
 
         label_path = self.root_path / f"masks/{image_path.stem}.bmp"
-        labels = Image.open(label_path)
-        labels = np.array(labels) / 255
-
-        labels_tensor = np.zeros(labels.shape[:2], dtype=np.int64)
+        label_img = np.array(Image.open(label_path)) / 255
+        labels = np.zeros(label_img.shape[:2], dtype=np.int64)
 
         for rgb, class_idx in self.rgb_to_class.items():
-            labels_tensor[np.where(labels == np.array(rgb))[0]] = class_idx
+            x, y, _ = np.where(label_img == np.array(rgb))
+            labels[x, y] = class_idx
 
-        
-
-        labels_tensor = torch.tensor(labels_tensor)
+        labels_tensor = torch.tensor(labels).unsqueeze(0)
         label_masks = torch.zeros(len(self.classes), *labels.shape).scatter_(0, labels_tensor, 1)
 
         if self.transform_images:
