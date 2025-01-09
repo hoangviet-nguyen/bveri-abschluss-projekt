@@ -54,12 +54,12 @@ class Encoder(nn.Module):
         image batch of shape (N, C2, H / S, W / S), where S is the global stride.
     """
 
-    def __init__(self, start=4):
+    def __init__(self, start=4, num_blocks=8):
         super().__init__()
         self.encoder_blocks = nn.ModuleList(
             [
                 EncoderBlock(in_channels=start * 2**i, out_channel=start * 2 ** (i + 1))
-                for i in range(0, 8)
+                for i in range(0, num_blocks)
             ]
         )
 
@@ -150,10 +150,10 @@ class DecoderBlock(nn.Module):
         return concatenated
     
 class Decoder(nn.Module):
-    def __init__(self, start=4):
+    def __init__(self, start=4, num_blocks=8):
         super().__init__()
 
-        end = int(start * 256)
+        end = int(start * 2 ** num_blocks)
         self.init_block = DecoderBlock(in_channels=end, out_channel=end // 2)
 
         self.decoder_blocks = nn.ModuleList(
@@ -161,7 +161,7 @@ class Decoder(nn.Module):
                 DecoderBlock(
                     in_channels=end // 2**i, out_channel=end // 2 ** (i + 1), skip=True
                 )
-                for i in range(1, 9)
+                for i in range(1, num_blocks)
             ]
         )
 
@@ -178,7 +178,7 @@ class Decoder(nn.Module):
         return x
     
 
-class EncoderDecoder(nn.Module):
+class UNet(nn.Module):
 
     def __init__(self, encoder, decoder, n_classes, start=5):
         super().__init__()
