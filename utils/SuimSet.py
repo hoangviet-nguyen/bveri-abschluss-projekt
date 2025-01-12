@@ -1,11 +1,13 @@
 from pathlib import Path
 from typing import Callable
 
+
 import numpy as np
 import torch
-import utils
+import utils.utils as utils
 from torch.utils.data import Dataset
 from PIL import Image
+
 
 
 def download(download_dir: Path):
@@ -91,13 +93,13 @@ class SuimDataSet(Dataset):
             x, y, _ = np.where(label_img == np.array(rgb))
             labels[x, y] = class_idx
 
-        labels_tensor = torch.tensor(labels).unsqueeze(0)
-        label_masks = torch.zeros(len(self.classes), *labels.shape).scatter_(0, labels_tensor, 1)
+        ground_truth = torch.tensor(labels).unsqueeze(0)
+        label_masks = torch.zeros(len(self.rgb_to_class), *labels.shape).scatter_(0, ground_truth, 1)
 
         if self.transform_images:
             image = self.transform_images(image)
         if self.transform_labels:
             label_masks = self.transform_labels(label_masks)
-            labels_tensor = self.transform_labels(labels_tensor)
+            ground_truth = self.transform_labels(ground_truth)
 
-        return image, label_masks, labels_tensor
+        return image, label_masks, ground_truth

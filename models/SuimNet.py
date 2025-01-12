@@ -2,7 +2,6 @@ from torch import nn
 import torch
 
 class RSB(nn.Module):
-    """A basic encoder block that performs convolution, normalization, and activation."""
 
     def __init__(
         self,
@@ -57,19 +56,6 @@ class RSB(nn.Module):
         return f"EncoderDecoder model with encoder and decoder components."
     
 class RSBEncoder(nn.Module):
-    """Encodes an image to a low-dimensional representation.
-
-    Args:
-        num_channels_in (int): Number of input channels (e.g., 3 for RGB images).
-        num_channels (list[int]): Number of output channels for each block.
-            Each block reduces spatial dimensionality by half.
-    Input:
-        image batch of shape (N, C, H, W)
-
-    Output:
-        image batch of shape (N, C2, H / S, W / S), where S is the global stride.
-    """
-
     def __init__(self):
         super().__init__()
 
@@ -121,17 +107,6 @@ class RSBEncoder(nn.Module):
         return f"EncoderDecoder model with encoder and decoder components."
 
 class RSBDecoder(nn.Module):
-    """Decodes a low-dimensional representation back to an image.
-
-    Args:
-        num_channels_in (int): Number of input channels (output of encoder)
-        num_channels (list[int]): Number of channels for each block, reversed from the encoder configuration.
-    Input:
-        feature map of shape (N, C, H, W)
-    Output:
-        image batch of shape (N, C_out, H_out, W_out), where C_out is typically the original input channels.
-    """
-
     def __init__(self, n_classes):
         super().__init__()
         self.n_classes = n_classes
@@ -194,8 +169,6 @@ class RSBDecoder(nn.Module):
         out = self.final_conv(decoded3)
 
         return out
-    def __repr__(self):
-        return f"EncoderDecoder model with encoder and decoder components."
     
 class SuimNet(nn.Module):
     def __init__(self, encoder, decoder):
@@ -207,7 +180,4 @@ class SuimNet(nn.Module):
         encoded_inputs = self.encoder(x)
         out = self.decoder(encoded_inputs)
         return out
-
-    def __repr__(self):
-        return f"EncoderDecoder model with encoder and decoder components."
 
